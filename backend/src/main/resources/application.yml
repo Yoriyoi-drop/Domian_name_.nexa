@@ -1,0 +1,156 @@
+# application.yml - Default configuration
+spring:
+  application:
+    name: myproject-nexa-backend
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/myproject_nexa
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_MAX_POOL_SIZE:20}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
+      idle-timeout: ${DB_IDLE_TIMEOUT:600000}
+      max-lifetime: ${DB_MAX_LIFETIME:1800000}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        # Performance optimizations
+        jdbc:
+          batch_size: 25
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+        jdbc.batch_versioned_data: true
+        generate_statistics: ${DB_GENERATE_STATISTICS:false}
+        # Second level cache configuration
+        cache:
+          use_second_level_cache: ${DB_USE_SECOND_LEVEL_CACHE:true}
+          region.factory_class: org.hibernate.cache.redis.RedisRegionFactory
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: ${REDIS_TIMEOUT:2000ms}
+    database: ${REDIS_DATABASE:0}
+    lettuce:
+      pool:
+        max-active: ${REDIS_MAX_ACTIVE:10}
+        max-idle: ${REDIS_MAX_IDLE:8}
+        min-idle: ${REDIS_MIN_IDLE:0}
+        max-wait: ${REDIS_MAX_WAIT:-1ms}
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+# Application Configuration
+app:
+  name: "MyProject.nexa"
+  version: "1.0.0"
+  description: "Enterprise Fullstack Application"
+  security:
+    enable-csrf: true
+    enable-hsts: true
+    enable-csp: true
+    password-policy: "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d@$!%*#?&]{8,}$"
+    max-login-attempts: ${MAX_LOGIN_ATTEMPTS:5}
+    lockout-duration-minutes: ${LOCKOUT_DURATION_MINUTES:30}
+    allowed-origins:
+      - "https://myproject.nexa"
+      - "https://api.myproject.nexa"
+  jwt:
+    secret: ${JWT_SECRET:myprojectnexasecretkeyfortestingonlychangethisinyourproductionenvironment}
+    expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
+    refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds
+    header: "Authorization"
+    prefix: "Bearer "
+  database:
+    max-pool-size: ${DB_MAX_POOL_SIZE:20}
+    connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
+    idle-timeout: ${DB_IDLE_TIMEOUT:600000}
+    max-lifetime: ${DB_MAX_LIFETIME:1800000}
+    enable-connection-pool-metrics: true
+  cache:
+    ttl-seconds: ${CACHE_TTL_SECONDS:3600} # 1 hour
+    max-size: ${CACHE_MAX_SIZE:1000}
+    enabled: ${CACHE_ENABLED:true}
+    default-cache-name: "default"
+  rate-limit:
+    window-seconds: ${RATE_LIMIT_WINDOW:60} # 1 minute
+    max-requests: ${RATE_LIMIT_MAX_REQUESTS:100}
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    enable-per-user-limit: ${RATE_LIMIT_PER_USER:false}
+  audit:
+    enabled: ${AUDIT_ENABLED:true}
+    log-sensitive-data: ${AUDIT_LOG_SENSITIVE:false}
+    log-format: "JSON"
+    enable-user-tracking: true
+
+# Legacy JWT Configuration (for backward compatibility)
+jwt:
+  secret: ${JWT_SECRET:myprojectnexasecretkeyfortestingonlychangethisinyourproductionenvironment}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds
+
+# Actuator and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
+  info:
+    git:
+      mode: full
+
+# Logging
+logging:
+  level:
+    com.myproject.nexa: ${LOG_LEVEL:INFO}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:DEBUG}
+    org.springframework.web: ${WEB_LOG_LEVEL:DEBUG}
+    org.springframework.web.servlet.DispatcherServlet: ${SPRING_DISPATCHER_LOG_LEVEL:DEBUG}
+    org.hibernate.SQL: ${HIBERNATE_SQL_LOG_LEVEL:WARN}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${HIBERNATE_BIND_LOG_LEVEL:WARN}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# OpenTelemetry Configuration
+otel:
+  service:
+    name: myproject-nexa-backend
+  traces:
+    sampler:
+      ratio: 1.0
+  logs:
+    export:
+      enabled: true

@@ -1,0 +1,188 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test-frontend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run frontend linting
+      run: |
+        cd frontend
+        npm run lint
+
+    - name: Run frontend build
+      run: |
+        cd frontend
+        npm run build
+
+  test-backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [17]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+        cache: 'maven'
+        server-id: github
+        settings-path: ${{ github.workspace }}
+
+    - name: Setup Maven
+      uses: stCarolas/setup-maven@v4.5
+      with:
+        maven-version: 3.9.4
+
+    - name: Run backend tests
+      run: |
+        cd backend
+        mvn test -B
+
+    - name: Run backend verification
+      run: |
+        cd backend
+        mvn verify -B
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: [test-frontend, test-backend]
+    if: github.ref == 'refs/heads/main'
+    
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata for Docker
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=${{ github.sha }}
+          type=ref,event=branch
+          type=ref,event=pr
+
+    - name: Build and push frontend Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: Dockerfile.frontend
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+        labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          VITE_API_BASE_URL=https://api.myproject.nexa
+
+    - name: Build and push backend Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: Dockerfile.backend
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup SSH key for deployment
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Deploy to server
+      run: |
+        # Add your deployment commands here
+        # For example, SSH to your server and run the deployment script
+        ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+          cd /opt/myproject-nexa
+          git pull origin main
+          docker-compose down
+          docker-compose pull
+          docker-compose up -d
+          docker image prune -f
+        EOF
+
+    - name: Run post-deployment tests
+      run: |
+        # Add your post-deployment tests here
+        # For example, curl the health endpoints
+        sleep 30
+        curl -f https://myproject.nexa/health || exit 1
+        curl -f https://api.myproject.nexa/actuator/health || exit 1
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    
+    steps:
+    - name: Notify on success
+      if: ${{ needs.deploy.result == 'success' }}
+      run: |
+        # Add your notification logic here
+        # For example, send a Slack notification
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"Deployment to production successful!","username":"GitHub Actions","icon_emoji":":rocket:"}' \
+        ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Notify on failure
+      if: ${{ needs.deploy.result == 'failure' }}
+      run: |
+        # Add your notification logic here
+        # For example, send a Slack notification
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"Deployment failed! Please check the logs.","username":"GitHub Actions","icon_emoji":":warning:"}' \
+        ${{ secrets.SLACK_WEBHOOK_URL }}
