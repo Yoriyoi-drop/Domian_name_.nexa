@@ -1,0 +1,122 @@
+# Blue deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myproject-nexa-backend-blue
+  namespace: myproject-nexa
+  labels:
+    app: myproject-nexa-backend
+    version: blue
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myproject-nexa-backend
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: myproject-nexa-backend
+        version: blue
+    spec:
+      containers:
+      - name: backend
+        image: myproject-nexa-backend:blue
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "production"
+        - name: DEPLOYMENT_VERSION
+          value: "blue"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+# Green deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myproject-nexa-backend-green
+  namespace: myproject-nexa
+  labels:
+    app: myproject-nexa-backend
+    version: green
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myproject-nexa-backend
+      version: green
+  template:
+    metadata:
+      labels:
+        app: myproject-nexa-backend
+        version: green
+    spec:
+      containers:
+      - name: backend
+        image: myproject-nexa-backend:green
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "production"
+        - name: DEPLOYMENT_VERSION
+          value: "green"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+# Service that can route to either blue or green deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: myproject-nexa-backend-svc-blue-green
+  namespace: myproject-nexa
+  labels:
+    app: myproject-nexa-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: myproject-nexa-backend
+    # This selector should match the current active version (blue or green)
+    version: blue
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http

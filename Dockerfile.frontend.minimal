@@ -1,0 +1,69 @@
+# Build stage
+FROM node:18-alpine as build
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY frontend/package*.json ./
+
+# Install dependencies - skip optional dependencies that cause build issues
+RUN npm ci --only=production --no-optional
+
+# Copy source code
+COPY frontend/ .
+
+# Create a simplified vite.config.js without the problematic plugins
+RUN echo 'import { defineConfig } from "vite"' > vite.config.js
+RUN echo 'import react from "@vitejs/plugin-react"' >> vite.config.js
+RUN echo 'import path from "path"' >> vite.config.js
+RUN echo '' >> vite.config.js
+RUN echo '// https://vitejs.dev/config/' >> vite.config.js
+RUN echo 'export default defineConfig({' >> vite.config.js
+RUN echo '  plugins: [react()],' >> vite.config.js
+RUN echo '  server: {' >> vite.config.js
+RUN echo '    host: true,' >> vite.config.js
+RUN echo '    port: 3000,' >> vite.config.js
+RUN echo '  },' >> vite.config.js
+RUN echo '  preview: {' >> vite.config.js
+RUN echo '    host: true,' >> vite.config.js
+RUN echo '    port: 3000,' >> vite.config.js
+RUN echo '  },' >> vite.config.js
+RUN echo '  define: {' >> vite.config.js
+RUN echo '    global: "globalThis",' >> vite.config.js
+RUN echo '  },' >> vite.config.js
+RUN echo '  resolve: {' >> vite.config.js
+RUN echo '    alias: {' >> vite.config.js
+RUN echo '      "@": path.resolve(__dirname, "./src"),' >> vite.config.js
+RUN echo '      "@/app": path.resolve(__dirname, "./src/app"),' >> vite.config.js
+RUN echo '      "@/features": path.resolve(__dirname, "./src/features"),' >> vite.config.js
+RUN echo '      "@/shared": path.resolve(__dirname, "./src/shared"),' >> vite.config.js
+RUN echo '      "@/core": path.resolve(__dirname, "./src/core"),' >> vite.config.js
+RUN echo '      "@/styles": path.resolve(__dirname, "./src/styles"),' >> vite.config.js
+RUN echo '      "@/assets": path.resolve(__dirname, "./src/assets"),' >> vite.config.js
+RUN echo '      "@/utils": path.resolve(__dirname, "./src/utils"),' >> vite.config.js
+RUN echo '      "@/hooks": path.resolve(__dirname, "./src/hooks"),' >> vite.config.js
+RUN echo '      "@/services": path.resolve(__dirname, "./src/services"),' >> vite.config.js
+RUN echo '      "@/components": path.resolve(__dirname, "./src/components"),' >> vite.config.js
+RUN echo '      "@/ui": path.resolve(__dirname, "./src/shared/components/ui"),' >> vite.config.js
+RUN echo '    },' >> vite.config.js
+RUN echo '  },' >> vite.config.js
+RUN echo '  build: {' >> vite.config.js
+RUN echo '    rollupOptions: { }' >> vite.config.js
+RUN echo '  }' >> vite.config.js
+RUN echo '})' >> vite.config.js
+
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+
+# Copy built assets from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,0 +1,78 @@
+name: Rollback on Failure
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_version:
+        description: 'Version to rollback to (e.g., blue or green)'
+        required: true
+        default: 'blue'
+      reason:
+        description: 'Reason for rollback'
+        required: true
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+        
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig --name myproject-nexa-production --region ${{ env.AWS_REGION }}
+        
+    - name: Rollback to previous version
+      run: |
+        # Get current active deployment
+        CURRENT_ACTIVE=$(kubectl get service myproject-nexa-backend-svc-blue-green -n myproject-nexa -o jsonpath='{.spec.selector.version}')
+        
+        # Determine rollback version (opposite of current)
+        if [ "${{ inputs.deployment_version }}" = "blue" ]; then
+          ROLLBACK_VERSION="green"
+        else
+          ROLLBACK_VERSION="blue"
+        fi
+        
+        echo "Rolling back from $CURRENT_ACTIVE to $ROLLBACK_VERSION"
+        echo "Reason: ${{ inputs.reason }}"
+        
+        # Scale down the new deployment
+        kubectl scale deployment/myproject-nexa-backend-$CURRENT_ACTIVE -n myproject-nexa --replicas=0
+        
+        # Scale up the previous deployment
+        kubectl scale deployment/myproject-nexa-backend-$ROLLBACK_VERSION -n myproject-nexa --replicas=2
+        
+        # Update the service to point to the previous deployment
+        kubectl patch service myproject-nexa-backend-svc-blue-green -n myproject-nexa -p '{"spec":{"selector":{"version":"'"$ROLLBACK_VERSION"'"}}}'
+        
+        # Verify rollback
+        kubectl get pods -n myproject-nexa
+        kubectl rollout status deployment/myproject-nexa-backend-$ROLLBACK_VERSION -n myproject-nexa
+        
+        # Log rollback to monitoring system
+        echo "$(date): Rollback executed from $CURRENT_ACTIVE to $ROLLBACK_VERSION, reason: ${{ inputs.reason }}" >> /tmp/rollback.log
+
+  alert-on-rollback:
+    runs-on: ubuntu-latest
+    needs: rollback
+    steps:
+    - name: Send rollback notification
+      run: |
+        # Send notification to Slack or other monitoring system
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"ROLLBACK EXECUTED: Deployment rolled back to ${{ inputs.deployment_version }} in production. Reason: ${{ inputs.reason }}"}' \
+        ${{ secrets.SLACK_WEBHOOK_URL }}

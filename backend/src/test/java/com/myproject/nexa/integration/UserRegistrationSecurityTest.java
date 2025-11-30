@@ -8,18 +8,23 @@ import com.myproject.nexa.entities.User;
 import com.myproject.nexa.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
+import org.springframework.core.ParameterizedTypeReference;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(TestContainerConfig.class)
 class UserRegistrationSecurityTest {
 
     @LocalServerPort
@@ -49,10 +54,10 @@ class UserRegistrationSecurityTest {
 
         HttpEntity<RegisterRequest> entity = new HttpEntity<>(request, headers);
         ResponseEntity<ApiResponse<AuthResponse>> response = restTemplate.exchange(
-                getRootUrl() + "/register",
-                HttpMethod.POST,
-                entity,
-                ApiResponse.class
+            getRootUrl() + "/register",
+            HttpMethod.POST,
+            entity,
+            new ParameterizedTypeReference<ApiResponse<AuthResponse>>() {}
         );
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -75,10 +80,10 @@ class UserRegistrationSecurityTest {
 
         HttpEntity<RegisterRequest> entity = new HttpEntity<>(request, headers);
         ResponseEntity<ApiResponse<AuthResponse>> response = restTemplate.exchange(
-                getRootUrl() + "/register",
-                HttpMethod.POST,
-                entity,
-                ApiResponse.class
+            getRootUrl() + "/register",
+            HttpMethod.POST,
+            entity,
+            new ParameterizedTypeReference<ApiResponse<AuthResponse>>() {}
         );
 
         // Should return bad request due to password validation
@@ -100,10 +105,10 @@ class UserRegistrationSecurityTest {
 
         HttpEntity<RegisterRequest> entity = new HttpEntity<>(request, headers);
         ResponseEntity<ApiResponse<AuthResponse>> response = restTemplate.exchange(
-                getRootUrl() + "/register",
-                HttpMethod.POST,
-                entity,
-                ApiResponse.class
+            getRootUrl() + "/register",
+            HttpMethod.POST,
+            entity,
+            new ParameterizedTypeReference<ApiResponse<AuthResponse>>() {}
         );
 
         // Should return bad request due to validation

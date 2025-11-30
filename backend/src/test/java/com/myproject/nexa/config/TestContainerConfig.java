@@ -1,17 +1,18 @@
 package com.myproject.nexa.config;
 
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-@TestConfiguration
+@Configuration
 public class TestContainerConfig {
+    
+    // Using a static instance to share the container across tests
+    public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
+            .withDatabaseName("testdb")
+            .withUsername("test")
+            .withPassword("test");
 
-    @Bean
-    public PostgreSQLContainer<?> postgreSQLContainer() {
-        return new PostgreSQLContainer<>("postgres:15")
-                .withDatabaseName("testdb")
-                .withUsername("test")
-                .withPassword("test");
+    static {
+        postgres.start();
     }
 }

@@ -55,16 +55,18 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         testUser = User.builder()
-                .id(1L)
-                .username("testuser")
-                .email("test@example.com")
-                .password("encoded_password")
-                .firstName("Test")
-                .lastName("User")
-                .enabled(true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+            .username("testuser")
+            .email("test@example.com")
+            .password("encoded_password")
+            .firstName("Test")
+            .lastName("User")
+            .enabled(true)
+            .build();
+        // set superclass fields via setters (Lombok builder does not include superclass fields)
+        testUser.setId(1L);
+        testUser.setCreatedAt(LocalDateTime.now());
+        testUser.setUpdatedAt(LocalDateTime.now());
+        testUser.setRoles(List.of());
 
         createUserRequest = new UserCreateRequest();
         createUserRequest.setUsername("newuser");
@@ -81,9 +83,8 @@ class UserServiceTest {
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
         when(passwordEncoder.encode("Password123!")).thenReturn("encoded_password");
-        when(observabilityUtil.timeOperation(anyString(), any(), any())).thenAnswer(invocation -> {
-            return invocation.getArgument(1, java.util.concurrent.Callable.class).call();
-        });
+        doAnswer(invocation -> invocation.getArgument(1, java.util.concurrent.Callable.class).call())
+            .when(observabilityUtil).timeOperation(anyString(), any(), any());
         when(userRepository.save(any(User.class))).thenReturn(testUser);
 
         // Act & Assert

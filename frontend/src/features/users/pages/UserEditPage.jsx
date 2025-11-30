@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../../shared/components/ui/button';
-import { Input } from '../../shared/components/ui/input';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/shared/components/ui/card';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useApi } from '../../shared/hooks/useApi';
+import useApi from '@/shared/hooks/useApi';
 
 const UserEditPage = () => {
   const { id } = useParams();

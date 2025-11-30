@@ -3,40 +3,41 @@ package com.myproject.nexa.utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SecurityUtilTest {
+
+    @Mock
+    private InputSanitizer inputSanitizer;
 
     private SecurityUtil securityUtil;
 
     @BeforeEach
     void setUp() {
-        securityUtil = new SecurityUtil();
+        securityUtil = new SecurityUtil(inputSanitizer);
     }
 
     @Test
-    void testSanitizeHtml() {
-        String input = "<script>alert('xss')</script>";
-        String expected = "&lt;script&gt;alert&#40;'xss'&#41;&lt;/script&gt;";
-        String result = securityUtil.sanitizeHtml(input);
-        assertEquals(expected, result);
+    void testSanitizeUserInput() {
+        String input = "<script>alert('xss')</script> normal text";
+        String sanitizedInput = " normal text";
+
+        when(inputSanitizer.stripHtml(anyString())).thenReturn(sanitizedInput);
+
+        String result = securityUtil.sanitizeUserInput(input);
+        assertEquals(sanitizedInput, result);
     }
 
     @Test
-    void testSanitizeHtmlWithNull() {
-        String result = securityUtil.sanitizeHtml(null);
+    void testSanitizeUserInputWithNull() {
+        String result = securityUtil.sanitizeUserInput(null);
         assertNull(result);
-    }
-
-    @Test
-    void testSanitizeSql() {
-        String input = "'; DROP TABLE users; --";
-        String expected = " DROP TABLE users; ";
-        String result = securityUtil.sanitizeSql(input);
-        assertEquals(expected, result);
     }
 
     @Test
@@ -55,33 +56,19 @@ class SecurityUtilTest {
     }
 
     @Test
-    void testContainsMaliciousContent() {
-        assertTrue(securityUtil.containsMaliciousContent("SELECT * FROM users"));
-        assertTrue(securityUtil.containsMaliciousContent("<script>alert</script>"));
-        assertFalse(securityUtil.containsMaliciousContent("normal text"));
-        assertFalse(securityUtil.containsMaliciousContent(null));
+    void testPasswordTooCommon() {
+        assertTrue(securityUtil.isPasswordTooCommon("password123"));
+        assertTrue(securityUtil.isPasswordTooCommon("PaSsWoRd"));
+        assertFalse(securityUtil.isPasswordTooCommon("SecureP@ssw0rd2023!"));
+        assertFalse(securityUtil.isPasswordTooCommon(null));
     }
 
     @Test
-    void testEncodeForDisplay() {
-        String input = "<script>alert('xss')</script>";
-        String expected = "&lt;script&gt;alert&#40;'xss'&#41;&lt;/script&gt;";
-        String result = securityUtil.encodeForDisplay(input);
-        assertEquals(expected, result);
-    }
+    void testValidFileName() {
+        when(inputSanitizer.sanitizeFilename("valid_file.txt")).thenReturn("valid_file.txt");
+        when(inputSanitizer.sanitizeFilename("../invalid_file.txt")).thenReturn("invalid_file.txt");
 
-    @Test
-    void testSanitizeUserInput() {
-        String input = "<script>alert('xss')</script> normal text";
-        String expected = " normal text";
-        String result = securityUtil.sanitizeUserInput(input);
-        assertEquals(expected, result);
-    }
-
-    @Test
-    void testSanitizeUserInputWithMaliciousContent() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            securityUtil.sanitizeUserInput("UNION SELECT * FROM users");
-        });
+        assertTrue(securityUtil.isValidFileName("valid_file.txt"));
+        assertFalse(securityUtil.isValidFileName("../invalid_file.txt"));
     }
 }

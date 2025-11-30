@@ -1,68 +1,322 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+    /* Yin-Yang Light Theme - Yang (Light) Dominant */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 10% 3.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 240 10% 3.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Deep Charcoal (Yin element in Yang) */
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Soft Pearl */
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted - Gentle Gray */
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Balanced Slate */
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive - Controlled Red */
+    --destructive: 0 72.2% 50.6%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Success - Harmonious Green */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
 
-    --radius: 0.5rem;
+    /* Warning - Balanced Amber */
+    --warning: 38 92% 50%;
+    --warning-foreground: 240 5.9% 10%;
+
+    /* Info - Calm Blue */
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+
+    --radius: 0.75rem;
+
+    /* Yin-Yang Specific Colors */
+    --yin: 240 5.9% 10%;
+    --yang: 0 0% 98%;
+    --balance: 240 3.8% 46.1%;
+
+    /* Gradient Definitions */
+    --gradient-yin-yang: linear-gradient(135deg, hsl(var(--yin)) 0%, hsl(var(--yang)) 100%);
+    --gradient-yang-yin: linear-gradient(135deg, hsl(var(--yang)) 0%, hsl(var(--yin)) 100%);
+    --gradient-balanced: linear-gradient(135deg, hsl(var(--yin)) 0%, hsl(var(--balance)) 50%, hsl(var(--yang)) 100%);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Yin-Yang Dark Theme - Yin (Dark) Dominant */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Primary - Pure White (Yang element in Yin) */
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary - Deep Charcoal */
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    /* Muted - Soft Shadow */
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent - Balanced Slate */
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
 
+    /* Destructive - Controlled Red */
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Success - Harmonious Green */
+    --success: 142 71% 45%;
+    --success-foreground: 240 5.9% 10%;
+
+    /* Warning - Balanced Amber */
+    --warning: 38 92% 50%;
+    --warning-foreground: 240 5.9% 10%;
+
+    /* Info - Calm Blue */
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 98%;
+
+    /* Border and Input */
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+
+    /* Yin-Yang Specific Colors */
+    --yin: 240 10% 3.9%;
+    --yang: 0 0% 98%;
+    --balance: 240 5% 64.9%;
+  }
+
+  .yin-yang {
+    /* Harmonious Balance Theme */
+    --background: 210 20% 98%;
+    --foreground: 240 10% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 15%;
+
+    --primary: 220 40% 35%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 210 25% 90%;
+    --secondary-foreground: 240 10% 15%;
+
+    --muted: 210 25% 90%;
+    --muted-foreground: 240 8% 40%;
+
+    --accent: 210 25% 90%;
+    --accent-foreground: 240 10% 15%;
+
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 98%;
+
+    --success: 160 60% 40%;
+    --success-foreground: 0 0% 98%;
+
+    --warning: 45 90% 50%;
+    --warning-foreground: 240 10% 5%;
+
+    --info: 200 70% 45%;
+    --info-foreground: 0 0% 98%;
+
+    --border: 210 20% 85%;
+    --input: 210 20% 85%;
+    --ring: 220 40% 35%;
+  }
+
+  .ocean {
+    /* Ocean Theme - Calming blues and teals */
+    --background: 200 40% 98%;
+    --foreground: 200 10% 10%;
+
+    --card: 195 30% 95%;
+    --card-foreground: 200 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 10% 10%;
+
+    --primary: 200 80% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 195 25% 85%;
+    --secondary-foreground: 200 10% 10%;
+
+    --muted: 195 25% 85%;
+    --muted-foreground: 200 8% 40%;
+
+    --accent: 190 30% 90%;
+    --accent-foreground: 200 10% 10%;
+
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 60% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 35 90% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 200 90% 45%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 195 20% 80%;
+    --input: 195 20% 80%;
+    --ring: 200 80% 35%;
+  }
+
+  .forest {
+    /* Forest Theme - Earthy greens and browns */
+    --background: 140 25% 97%;
+    --foreground: 140 10% 10%;
+
+    --card: 130 20% 95%;
+    --card-foreground: 140 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 140 10% 10%;
+
+    --primary: 140 60% 30%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 130 15% 85%;
+    --secondary-foreground: 140 10% 10%;
+
+    --muted: 130 15% 85%;
+    --muted-foreground: 140 8% 40%;
+
+    --accent: 120 20% 90%;
+    --accent-foreground: 140 10% 10%;
+
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 120 60% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 90% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 200 70% 45%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 130 15% 80%;
+    --input: 130 15% 80%;
+    --ring: 140 60% 30%;
+  }
+
+  .sunset {
+    /* Sunset Theme - Warm oranges and pinks */
+    --background: 20 40% 97%;
+    --foreground: 20 10% 10%;
+
+    --card: 15 25% 95%;
+    --card-foreground: 20 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 10% 10%;
+
+    --primary: 20 80% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 15 20% 85%;
+    --secondary-foreground: 20 10% 10%;
+
+    --muted: 15 20% 85%;
+    --muted-foreground: 20 8% 40%;
+
+    --accent: 10 30% 90%;
+    --accent-foreground: 20 10% 10%;
+
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 120 60% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 90% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 200 70% 45%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 15 15% 80%;
+    --input: 15 15% 80%;
+    --ring: 20 80% 40%;
+  }
+
+  .midnight {
+    /* Midnight Theme - Deep blues and purples */
+    --background: 240 15% 5%;
+    --foreground: 0 0% 95%;
+
+    --card: 240 10% 10%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 240 10% 8%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 250 60% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 8% 15%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 240 8% 15%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 10% 12%;
+    --accent-foreground: 0 0% 90%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 140 70% 50%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 90% 60%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 200 80% 60%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 240 8% 20%;
+    --input: 240 8% 20%;
+    --ring: 250 60% 50%;
   }
 }
 
@@ -70,7 +324,267 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+  }
+}
+
+@layer components {
+  /* Yin-Yang Card Styles */
+  .card-yin-yang {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg, hsl(var(--yin)) 0%, hsl(var(--yang)) 100%);
+  }
+  
+  .card-yang-yin {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg, hsl(var(--yang)) 0%, hsl(var(--yin)) 100%);
+  }
+  
+  .card-balanced {
+    @apply relative overflow-hidden bg-card border border-border;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card-balanced:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px);
+  }
+  
+  /* Glassmorphism Effect */
+  .glass-effect {
+    @apply backdrop-blur-xl bg-opacity-70;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .dark .glass-effect {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Yin-Yang Button Styles */
+  .btn-yin {
+    @apply bg-[hsl(var(--yin))] text-[hsl(var(--yang))] hover:bg-[hsl(var(--yin))]/90;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .btn-yang {
+    @apply bg-[hsl(var(--yang))] text-[hsl(var(--yin))] hover:bg-[hsl(var(--yang))]/90 border border-[hsl(var(--yin))]/20;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .btn-balanced {
+    @apply bg-[hsl(var(--balance))] text-white hover:bg-[hsl(var(--balance))]/90;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Gradient Text */
+  .text-gradient-yin-yang {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--yin)) 0%, hsl(var(--yang)) 100%);
+  }
+  
+  .text-gradient-yang-yin {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--yang)) 0%, hsl(var(--yin)) 100%);
+  }
+  
+  /* Animated Gradient Background */
+  .animated-gradient {
+    background: linear-gradient(-45deg, hsl(var(--yin)), hsl(var(--balance)), hsl(var(--yang)), hsl(var(--balance)));
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+  }
+  
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  /* Smooth Transitions */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Yin-Yang Circle Animation */
+  .yin-yang-circle {
+    @apply relative w-24 h-24 rounded-full;
+    background: linear-gradient(to right, hsl(var(--yin)) 50%, hsl(var(--yang)) 50%);
+    animation: rotate 10s linear infinite;
+  }
+  
+  .yin-yang-circle::before {
+    content: '';
+    @apply absolute top-0 left-1/2 w-12 h-12 rounded-full;
+    background: hsl(var(--yang));
+    transform: translateX(-50%);
+  }
+  
+  .yin-yang-circle::after {
+    content: '';
+    @apply absolute bottom-0 left-1/2 w-12 h-12 rounded-full;
+    background: hsl(var(--yin));
+    transform: translateX(-50%);
+  }
+  
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Professional Input Styles */
+  .input-professional {
+    @apply w-full px-4 py-3 rounded-lg border border-border bg-background;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+    @apply transition-all duration-200;
+  }
+  
+  /* Professional Card with Shadow */
+  .card-professional {
+    @apply bg-card rounded-xl border border-border p-6;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card-professional:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Scrollbar Styling */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-secondary;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground rounded-full;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary;
+  }
+}
+
+@layer utilities {
+  /* Text Balance */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Backdrop Blur Utilities */
+  .backdrop-blur-professional {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  /* Custom Shadows */
+  .shadow-yin {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4);
+  }
+  
+  .shadow-yang {
+    box-shadow: 0 10px 40px -10px rgba(255, 255, 255, 0.4);
+  }
+  
+  .shadow-balanced {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Hover Effects */
+  .hover-lift {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+  
+  /* Focus Ring */
+  .focus-ring-yin {
+    @apply focus:outline-none focus:ring-2 focus:ring-[hsl(var(--yin))] focus:ring-offset-2;
+  }
+  
+  .focus-ring-yang {
+    @apply focus:outline-none focus:ring-2 focus:ring-[hsl(var(--yang))] focus:ring-offset-2;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
   }
 }

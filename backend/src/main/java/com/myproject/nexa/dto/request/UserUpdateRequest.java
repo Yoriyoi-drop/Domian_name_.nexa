@@ -32,4 +32,33 @@ public class UserUpdateRequest {
     private String address;
 
     private Boolean enabled;
+
+    // Explicit getters to ensure compilation without Lombok processing issues
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
 }

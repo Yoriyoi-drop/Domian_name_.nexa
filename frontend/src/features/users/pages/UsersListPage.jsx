@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Button } from '../../shared/components/ui/button';
-import { Input } from '../../shared/components/ui/input';
-import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '../../shared/components/ui/table';
-import { useApi } from '../../shared/hooks/useApi';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/shared/components/ui/table';
+import useApi from '@/shared/hooks/useApi';
 import { Link } from 'react-router-dom';
 
 const UsersListPage = () => {

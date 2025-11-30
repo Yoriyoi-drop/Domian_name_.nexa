@@ -5,15 +5,22 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:postgresql://localhost:5432/myproject_nexa
+    url: jdbc:postgresql://localhost:5433/myproject_nexa_dev
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
     hikari:
+      minimum-idle: ${DB_MIN_IDLE:5}
       maximum-pool-size: ${DB_MAX_POOL_SIZE:20}
       connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
       idle-timeout: ${DB_IDLE_TIMEOUT:600000}
       max-lifetime: ${DB_MAX_LIFETIME:1800000}
+      connection-test-query: SELECT 1
+      validation-timeout: ${DB_VALIDATION_TIMEOUT:5000}
+      leak-detection-threshold: ${DB_LEAK_DETECTION_THRESHOLD:60000}
+      initialization-fail-timeout: ${DB_INIT_FAIL_TIMEOUT:30000}
+      pool-name: NexaHikariPool
+      auto-commit: true
   jpa:
     hibernate:
       ddl-auto: validate
@@ -51,6 +58,23 @@ spring:
         max-idle: ${REDIS_MAX_IDLE:8}
         min-idle: ${REDIS_MIN_IDLE:0}
         max-wait: ${REDIS_MAX_WAIT:-1ms}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:/}
+    connection-timeout: ${RABBITMQ_CONNECTION_TIMEOUT:60000}
+    # Publisher confirms
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    # Connection factory settings
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 3
+        multiplier: 2
 
 server:
   port: 8080
@@ -69,11 +93,9 @@ app:
     password-policy: "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d@$!%*#?&]{8,}$"
     max-login-attempts: ${MAX_LOGIN_ATTEMPTS:5}
     lockout-duration-minutes: ${LOCKOUT_DURATION_MINUTES:30}
-    allowed-origins:
-      - "https://myproject.nexa"
-      - "https://api.myproject.nexa"
+    allowed-origins: ${ALLOWED_ORIGINS:https://myproject.nexa,https://api.myproject.nexa}
   jwt:
-    secret: ${JWT_SECRET:myprojectnexasecretkeyfortestingonlychangethisinyourproductionenvironment}
+    secret: ${JWT_SECRET}  # Required - no default provided for security
     expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
     refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds
     header: "Authorization"
@@ -85,10 +107,17 @@ app:
     max-lifetime: ${DB_MAX_LIFETIME:1800000}
     enable-connection-pool-metrics: true
   cache:
-    ttl-seconds: ${CACHE_TTL_SECONDS:3600} # 1 hour
+    ttl-seconds: ${CACHE_TTL_SECONDS:3600} # 1 hour default
+    user-ttl-seconds: ${USER_CACHE_TTL_SECONDS:1800} # 30 minutes for user data
+    session-ttl-seconds: ${SESSION_CACHE_TTL_SECONDS:1800} # 30 minutes for session data
+    token-ttl-seconds: ${TOKEN_CACHE_TTL_SECONDS:900} # 15 minutes for tokens
     max-size: ${CACHE_MAX_SIZE:1000}
     enabled: ${CACHE_ENABLED:true}
     default-cache-name: "default"
+  rabbitmq:
+    user-queue: ${RABBITMQ_USER_QUEUE:user.queue}
+    user-exchange: ${RABBITMQ_USER_EXCHANGE:user.exchange}
+    user-routing-key: ${RABBITMQ_USER_ROUTING_KEY:user.routing.key}
   rate-limit:
     window-seconds: ${RATE_LIMIT_WINDOW:60} # 1 minute
     max-requests: ${RATE_LIMIT_MAX_REQUESTS:100}
@@ -102,7 +131,7 @@ app:
 
 # Legacy JWT Configuration (for backward compatibility)
 jwt:
-  secret: ${JWT_SECRET:myprojectnexasecretkeyfortestingonlychangethisinyourproductionenvironment}
+  secret: ${JWT_SECRET}  # Required - no default provided for security
   expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
   refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds
 
@@ -149,8 +178,33 @@ otel:
   service:
     name: myproject-nexa-backend
   traces:
+    exporter: otlp
     sampler:
       ratio: 1.0
   logs:
     export:
       enabled: true
+  exporter:
+    otlp:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4317}
+      insecure: true
+
+# Application Monitoring Configuration
+app:
+  monitoring:
+    enabled: ${MONITORING_ENABLED:true}
+    metrics:
+      business:
+        enabled: ${BUSINESS_METRICS_ENABLED:true}
+        cache:
+          enabled: ${CACHE_METRICS_ENABLED:true}
+        database:
+          enabled: ${DB_METRICS_ENABLED:true}
+        http:
+          enabled: ${HTTP_METRICS_ENABLED:true}
+    tracing:
+      enabled: ${TRACING_ENABLED:true}
+      sampling-ratio: ${TRACING_SAMPLING_RATIO:1.0}
+    logging:
+      structured: ${STRUCTURED_LOGGING_ENABLED:true}
+      correlation-id-header: ${CORRELATION_ID_HEADER:X-Correlation-ID}

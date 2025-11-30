@@ -7,10 +7,12 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "roles", indexes = {
+        @Index(name = "idx_role_tenant_id", columnList = "tenant_id")
+})
 @Getter
 @Setter
-public class Role extends BaseEntity {
+public class Role extends TenantAwareBaseEntity {
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;

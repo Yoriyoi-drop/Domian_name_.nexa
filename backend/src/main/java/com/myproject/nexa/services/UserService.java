@@ -1,5 +1,6 @@
 package com.myproject.nexa.services;
 
+import com.myproject.nexa.dto.projection.UserProjection;
 import com.myproject.nexa.dto.request.UserCreateRequest;
 import com.myproject.nexa.dto.request.UserUpdateRequest;
 import com.myproject.nexa.dto.response.ApiResponse;
@@ -17,8 +18,18 @@ public interface UserService extends BaseService<User, Long, UserResponse> {
     List<UserResponse> getAllUsers();
     Page<UserResponse> getAllUsers(Pageable pageable);
     UserResponse updateUser(Long id, User user);
-    UserResponse mapToUserResponse(User user);
     void deleteUser(Long id);
+    UserResponse mapToUserResponse(User user);
+
+    // Additional methods needed by controllers
+    List<User> findAll();
+    void deleteById(Long id);
+    User update(User user);
+    void activateUser(Long id);
+    void deactivateUser(Long id);
+
+    // Separate method for Optional return type
+    Optional<User> findUserById(Long id);
 
     // Business logic methods
     UserResponse createUser(UserCreateRequest request);
@@ -41,4 +52,10 @@ public interface UserService extends BaseService<User, Long, UserResponse> {
     UserResponse disableUser(Long id);
     UserResponse lockUserAccount(Long id);
     UserResponse unlockUserAccount(Long id);
+
+    // Projection methods for performance optimization
+    Page<UserProjection> getAllUsersProjected(Pageable pageable);
+    Optional<UserProjection> getUserProjectedById(Long id);
+    Optional<UserProjection> getUserProjectedByUsername(String username);
+    Optional<UserProjection> getUserProjectedByEmail(String email);
 }

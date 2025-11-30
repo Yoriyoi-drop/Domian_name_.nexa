@@ -1,8 +1,8 @@
 import React from 'react';
-import { Button } from '../../shared/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/components/ui/card';
 import { useParams } from 'react-router-dom';
-import { useApi } from '../../shared/hooks/useApi';
+import useApi from '@/shared/hooks/useApi';
 
 const UserDetailPage = () => {
   const { id } = useParams();

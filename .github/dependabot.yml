@@ -1,0 +1,92 @@
+# dependabot.yml
+version: 2
+updates:
+  # Backend dependencies (Maven)
+  - package-ecosystem: "maven"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"
+      timezone: "Asia/Jakarta"
+    open-pull-requests-limit: 10
+    assignees:
+      - "maintainer"
+    reviewers:
+      - "maintainer"
+    labels:
+      - "dependencies"
+      - "backend"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps(dev)"
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        applies-to: version-updates
+        update-types:
+          - "major"
+    ignore:
+      # Ignore updates to these dependencies
+      - dependency-name: "org.springframework.boot"
+        update-types: ["version-update:semver-major"]
+  
+  # Frontend dependencies (npm)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"
+      timezone: "Asia/Jakarta"
+    open-pull-requests-limit: 10
+    assignees:
+      - "maintainer"
+    reviewers:
+      - "maintainer"
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps(dev)"
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        applies-to: version-updates
+        update-types:
+          - "major"
+    ignore:
+      # Ignore updates to these dependencies
+      - dependency-name: "react"
+        versions: ["19.x"]
+      - dependency-name: "react-dom"
+        versions: ["19.x"]
+
+  # GitHub Actions (workflows)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"
+      timezone: "Asia/Jakarta"
+    open-pull-requests-limit: 5
+    assignees:
+      - "maintainer"
+    reviewers:
+      - "maintainer"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      prefix-development: "ci(dev)"

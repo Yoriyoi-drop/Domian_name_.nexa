@@ -41,4 +41,37 @@ public class UserCreateRequest {
 
     @NotNull(message = "Enabled status is required")
     private Boolean enabled;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
 }

@@ -1,5 +1,5 @@
-import apiClient from '../../core/api/apiClient';
-import { API_ENDPOINTS } from '../../shared/utils/constants';
+import apiClient from '@/core/api/apiClient';
+import { API_ENDPOINTS } from '@/shared/utils/constants';
 
 // Auth service functions
 export const authService = {

@@ -8,11 +8,13 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Enable cookies to be sent with requests
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token if needed
 apiClient.interceptors.request.use(
   (config) => {
+    // If using authorization headers (for non-HttpOnly implementation)
     const token = tokenService.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -24,7 +26,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token refresh
+// Response interceptor to handle token refresh and errors
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -35,30 +37,46 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
+        // For HttpOnly cookies implementation, the refresh endpoint
+        // would use cookies instead of requiring the refresh token in the body
         const refreshToken = tokenService.getRefreshToken();
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
 
-        // Call refresh token endpoint
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/refresh`, {
-          refreshToken
+        // Call refresh token endpoint - in a true HttpOnly cookie implementation,
+        // this request would include the refresh token as an HttpOnly cookie automatically
+        const response = await apiClient.post('/auth/refresh', {
+          refreshToken: refreshToken || undefined // Send only if available
         });
 
         const { accessToken } = response.data;
-        tokenService.setAccessToken(accessToken);
+
+        // In HttpOnly cookie implementation, new access token might come in a cookie
+        // For now, we'll still handle it as before but the backend should set HttpOnly cookies
+        if (accessToken) {
+          tokenService.setAccessToken(accessToken);
+        }
 
         // Retry original request with new token
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        if (accessToken) {
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        }
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
+        // If refresh fails, clear tokens and redirect to login
         tokenService.clearTokens();
         window.location.href = '/login';
-        return Promise.reject(refreshError);
+        // Return a more user-friendly error
+        return Promise.reject(new Error('Session expired. Please login again.'));
       }
     }
 
+    // Handle other error cases
+    if (error.response?.status >= 500) {
+      // Server error - log for debugging but don't expose details to user
+      console.error('Server error:', error.response?.data || error.message);
+      return Promise.reject(new Error('Server error. Please try again later.'));
+    }
+
+    // Return the original error for client-side errors
     return Promise.reject(error);
   }
 );

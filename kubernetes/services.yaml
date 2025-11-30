@@ -1,0 +1,75 @@
+# Backend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: myproject-nexa-backend-svc
+  namespace: myproject-nexa
+  labels:
+    app: myproject-nexa-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: myproject-nexa-backend
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+---
+# Frontend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: myproject-nexa-frontend-svc
+  namespace: myproject-nexa
+  labels:
+    app: myproject-nexa-frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: myproject-nexa-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myproject-nexa-ingress
+  namespace: myproject-nexa
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+      add_header X-Frame-Options DENY always;
+      add_header X-Content-Type-Options nosniff always;
+spec:
+  tls:
+  - hosts:
+    - api.myproject.nexa
+    - www.myproject.nexa
+    secretName: myproject-nexa-tls
+  rules:
+  - host: api.myproject.nexa
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myproject-nexa-backend-svc
+            port:
+              number: 8080
+  - host: www.myproject.nexa
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myproject-nexa-frontend-svc
+            port:
+              number: 80

@@ -1,12 +1,14 @@
 package com.myproject.nexa.controllers;
 
+import com.myproject.nexa.annotation.RateLimit;
 import com.myproject.nexa.dto.request.UserCreateRequest;
 import com.myproject.nexa.dto.request.UserUpdateRequest;
 import com.myproject.nexa.dto.response.ApiResponse;
 import com.myproject.nexa.dto.response.UserResponse;
 import com.myproject.nexa.entities.User;
 import com.myproject.nexa.services.UserConcurrencyService;
-import com.myproject.nexa.services.UserService;
+import com.myproject.nexa.services.UserManagementService;
+import com.myproject.nexa.services.UserProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,7 +31,8 @@ import java.util.List;
 @Tag(name = "Users", description = "User management API")
 public class UserController {
 
-    private final UserService userService;
+    private final UserManagementService userManagementService;
+    private final UserProfileService userProfileService;
     private final UserConcurrencyService userConcurrencyService;
 
     @GetMapping
@@ -43,91 +46,94 @@ public class UserController {
         Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<UserResponse> users = userService.getAllUsers(pageable);
+        Page<UserResponse> users = userManagementService.getAllUsers(pageable);
         return ResponseEntity.ok(ApiResponse.success("Users retrieved successfully", users));
     }
 
     @PostMapping
+    @RateLimit(key = "create_user", limit = 5, window = 3600) // 5 user creations per hour
     @Operation(summary = "Create user", description = "Create a new user")
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
             @Valid @RequestBody UserCreateRequest request) {
-        UserResponse user = userService.createUser(request);
+        UserResponse user = userManagementService.createUser(request);
         return ResponseEntity.ok(ApiResponse.success("User created successfully", user));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get user by ID", description = "Retrieve a user by their ID")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
-        UserResponse user = userService.getUserById(id);
+        UserResponse user = userManagementService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.success("User retrieved successfully", user));
     }
 
     @GetMapping("/me")
     @Operation(summary = "Get current user", description = "Retrieve the currently authenticated user")
     public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(Authentication authentication) {
-        UserResponse user = userService.getCurrentUser(authentication.getName());
+        UserResponse user = userProfileService.getCurrentUser(authentication.getName());
         return ResponseEntity.ok(ApiResponse.success("Current user retrieved successfully", user));
     }
 
     @PutMapping("/{id}")
+    @RateLimit(key = "update_user", limit = 10, window = 3600) // 10 updates per hour per user
     @Operation(summary = "Update user", description = "Update a user by their ID")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody UserUpdateRequest request) {
 
-        UserResponse updatedUser = userService.updateUser(id, request);
+        UserResponse updatedUser = userManagementService.updateUser(id, request);
         return ResponseEntity.ok(ApiResponse.success("User updated successfully", updatedUser));
     }
 
     @PutMapping("/me")
+    @RateLimit(key = "update_current_user", limit = 20, window = 3600) // 20 updates per hour per user
     @Operation(summary = "Update current user", description = "Update the currently authenticated user")
     public ResponseEntity<ApiResponse<UserResponse>> updateCurrentUser(
             Authentication authentication,
             @Valid @RequestBody UserUpdateRequest request) {
 
-        UserResponse updatedUser = userService.updateCurrentUser(authentication.getName(), request);
+        UserResponse updatedUser = userProfileService.updateCurrentUser(authentication.getName(), request);
         return ResponseEntity.ok(ApiResponse.success("Current user updated successfully", updatedUser));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete user", description = "Delete a user by their ID")
     public ResponseEntity<ApiResponse<Object>> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+        userManagementService.deleteUser(id);
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully"));
     }
 
     @PatchMapping("/{id}/enable")
     @Operation(summary = "Enable user", description = "Enable a user account")
     public ResponseEntity<ApiResponse<UserResponse>> enableUser(@PathVariable Long id) {
-        UserResponse user = userService.enableUser(id);
+        UserResponse user = userManagementService.enableUser(id);
         return ResponseEntity.ok(ApiResponse.success("User enabled successfully", user));
     }
 
     @PatchMapping("/{id}/disable")
     @Operation(summary = "Disable user", description = "Disable a user account")
     public ResponseEntity<ApiResponse<UserResponse>> disableUser(@PathVariable Long id) {
-        UserResponse user = userService.disableUser(id);
+        UserResponse user = userManagementService.disableUser(id);
         return ResponseEntity.ok(ApiResponse.success("User disabled successfully", user));
     }
 
     @PatchMapping("/{id}/lock")
     @Operation(summary = "Lock user account", description = "Lock a user account")
     public ResponseEntity<ApiResponse<UserResponse>> lockUserAccount(@PathVariable Long id) {
-        UserResponse user = userService.lockUserAccount(id);
+        UserResponse user = userManagementService.lockUserAccount(id);
         return ResponseEntity.ok(ApiResponse.success("User account locked successfully", user));
     }
 
     @PatchMapping("/{id}/unlock")
     @Operation(summary = "Unlock user account", description = "Unlock a user account")
     public ResponseEntity<ApiResponse<UserResponse>> unlockUserAccount(@PathVariable Long id) {
-        UserResponse user = userService.unlockUserAccount(id);
+        UserResponse user = userManagementService.unlockUserAccount(id);
         return ResponseEntity.ok(ApiResponse.success("User account unlocked successfully", user));
     }
 
     @GetMapping("/role/{roleName}")
     @Operation(summary = "Get users by role", description = "Retrieve all users with a specific role")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getUsersByRole(@PathVariable String roleName) {
-        List<UserResponse> users = userService.findByRole(roleName);
+        List<UserResponse> users = userManagementService.findByRole(roleName);
         return ResponseEntity.ok(ApiResponse.success("Users retrieved successfully", users));
     }
 

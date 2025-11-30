@@ -50,7 +50,7 @@ public class ConfigurationValidator {
     private void validateJwtConfig() {
         log.debug("Validating JWT configuration...");
         
-        if (appProperties.getJwt().getSecret() == null || appProperties.getJwt().getSecret().length() < 25) {
+        if (appProperties.getJwt().getSecret() == null || appProperties.getJwt().getSecret().length() < 32) {
             log.warn("Security Warning: JWT secret should be at least 256 bits (32 characters). Consider using a stronger secret.");
         }
         

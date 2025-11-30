@@ -11,7 +11,7 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('yin-yang');
 
   useEffect(() => {
     // Get theme from localStorage or system preference
@@ -22,24 +22,33 @@ export const ThemeProvider = ({ children }) => {
       setTheme(savedTheme);
     } else if (systemPrefersDark) {
       setTheme('dark');
+    } else {
+      setTheme('yin-yang'); // Default to the new yin-yang theme
     }
   }, []);
 
   useEffect(() => {
     // Apply theme class to document element
-    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.remove('light', 'dark', 'yin-yang', 'ocean', 'forest', 'sunset', 'midnight');
     document.documentElement.classList.add(theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    const themes = ['light', 'dark', 'yin-yang', 'ocean', 'forest', 'sunset', 'midnight'];
+    const currentIndex = themes.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex]);
+  };
+
+  const setThemeByName = (themeName) => {
+    setTheme(themeName);
   };
 
   const value = {
     theme,
     toggleTheme,
-    setTheme
+    setTheme: setThemeByName
   };
 
   return (

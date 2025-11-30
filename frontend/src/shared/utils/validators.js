@@ -20,10 +20,10 @@ export const validateUsername = (username) => {
 export const validateLoginForm = (formData) => {
   const errors = {};
 
-  if (!formData.email) {
-    errors.email = 'Email is required';
-  } else if (!validateEmail(formData.email)) {
-    errors.email = 'Please enter a valid email address';
+  if (!formData.username) {
+    errors.username = 'Username is required';
+  } else if (!validateUsername(formData.username)) {
+    errors.username = 'Username must be 3-20 characters, alphanumeric and underscore only';
   }
 
   if (!formData.password) {

@@ -1,19 +1,23 @@
 // API endpoints configuration
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.myproject.nexa';
 
-export const AUTH_ENDPOINTS = {
-  LOGIN: `${API_BASE_URL}/api/v1/auth/login`,
-  REGISTER: `${API_BASE_URL}/api/v1/auth/register`,
-  REFRESH: `${API_BASE_URL}/api/v1/auth/refresh`,
-  LOGOUT: `${API_BASE_URL}/api/v1/auth/logout`,
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/api/v1/auth/login',
+    REGISTER: '/api/v1/auth/register',
+    REFRESH: '/api/v1/auth/refresh',
+    LOGOUT: '/api/v1/auth/logout',
+  },
+  USERS: {
+    BASE: '/api/v1/users',
+    ME: '/api/v1/users/me',
+    ENABLE: (id) => `/api/v1/users/${id}/enable`,
+    DISABLE: (id) => `/api/v1/users/${id}/disable`,
+  },
+  DASHBOARD: {
+    STATS: '/api/v1/dashboard/stats',
+    ACTIVITY: '/api/v1/dashboard/activity',
+  }
 };
 
-export const USER_ENDPOINTS = {
-  BASE: `${API_BASE_URL}/api/v1/users`,
-  ME: `${API_BASE_URL}/api/v1/users/me`,
-};
-
-export const DASHBOARD_ENDPOINTS = {
-  STATS: `${API_BASE_URL}/api/v1/dashboard/stats`,
-  ACTIVITY: `${API_BASE_URL}/api/v1/dashboard/activity`,
-};
+export default API_ENDPOINTS;

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    
+    <!-- Console Appender with JSON formatting -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <loggerName/>
+                <message/>
+                <mdc/>
+                <arguments/>
+                <stackTrace/>
+                
+                <!-- Custom fields -->
+                <pattern>
+                    <pattern>
+                        {
+                            "serviceName": "myproject-nexa-backend",
+                            "environment": "${spring.profiles.active:-default}",
+                            "correlationId": "%X{correlationId:-}",
+                            "userId": "%X{userId:-}",
+                            "sessionId": "%X{sessionId:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- File Appender with JSON formatting -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <loggerName/>
+                <message/>
+                <mdc/>
+                <arguments/>
+                <stackTrace/>
+                
+                <!-- Custom fields -->
+                <pattern>
+                    <pattern>
+                        {
+                            "serviceName": "myproject-nexa-backend",
+                            "environment": "${spring.profiles.active:-default}",
+                            "correlationId": "%X{correlationId:-}",
+                            "userId": "%X{userId:-}",
+                            "sessionId": "%X{sessionId:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Application-specific loggers -->
+    <logger name="com.myproject.nexa" level="${LOG_LEVEL:-INFO}"/>
+    <logger name="org.springframework.security" level="${SECURITY_LOG_LEVEL:-INFO}"/>
+    <logger name="org.springframework.web" level="${WEB_LOG_LEVEL:-INFO}"/>
+    <logger name="org.hibernate.SQL" level="${HIBERNATE_SQL_LOG_LEVEL:-WARN}"/>
+
+    <root level="${ROOT_LOG_LEVEL:-INFO}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

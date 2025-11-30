@@ -13,19 +13,24 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "users", indexes = {
-    @Index(name = "idx_user_username", columnList = "username"),
-    @Index(name = "idx_user_email", columnList = "email")
+        @Index(name = "idx_user_username", columnList = "username"),
+        @Index(name = "idx_user_email", columnList = "email"),
+        @Index(name = "idx_user_tenant_id", columnList = "tenant_id"),
+        @Index(name = "idx_user_enabled", columnList = "enabled"),
+        @Index(name = "idx_user_deleted", columnList = "deletedAt"),
+        @Index(name = "idx_user_created_at", columnList = "createdAt")
 })
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@lombok.experimental.SuperBuilder
 @FieldNameConstants
-public class User extends BaseEntity implements UserDetails {
+public class User extends TenantAwareBaseEntity implements UserDetails {
 
     @Column(name = "username", nullable = false, unique = true)
     @NotBlank(message = "Username is required")
@@ -68,12 +73,13 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "credentials_non_expired", nullable = false)
     private Boolean credentialsNonExpired = true;
 
+    @ElementCollection
+    @CollectionTable(name = "user_password_history", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "password_hash", length = 255)
+    private List<String> passwordHistory = new ArrayList<>();
+
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Role> roles;
 
     @Override
@@ -82,8 +88,8 @@ public class User extends BaseEntity implements UserDetails {
             return List.of();
         }
         return getRoles().stream()
-            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
-            .toList();
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .toList();
     }
 
     @Override
@@ -102,96 +108,109 @@ public class User extends BaseEntity implements UserDetails {
     }
 
     @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
-    
+
     // Getter and setter methods that may be missing
     public List<Role> getRoles() {
         return roles;
     }
-    
+
     public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
-    
+
     public String getEmail() {
         return email;
     }
-    
+
     public void setEmail(String email) {
         this.email = email;
     }
-    
+
     public String getFirstName() {
         return firstName;
     }
-    
+
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
-    
+
     public String getLastName() {
         return lastName;
     }
-    
+
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-    
+
     public String getPhone() {
         return phone;
     }
-    
+
     public void setPhone(String phone) {
         this.phone = phone;
     }
-    
+
     public String getAddress() {
         return address;
     }
-    
+
     public void setAddress(String address) {
         this.address = address;
     }
-    
+
     public Boolean getEnabled() {
         return enabled;
     }
-    
+
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
     }
-    
+
     public Boolean getAccountNonExpired() {
         return accountNonExpired;
     }
-    
+
     public void setAccountNonExpired(Boolean accountNonExpired) {
         this.accountNonExpired = accountNonExpired;
     }
-    
+
     public Boolean getAccountNonLocked() {
         return accountNonLocked;
     }
-    
+
     public void setAccountNonLocked(Boolean accountNonLocked) {
         this.accountNonLocked = accountNonLocked;
     }
-    
+
     public Boolean getCredentialsNonExpired() {
         return credentialsNonExpired;
     }
-    
+
     public void setCredentialsNonExpired(Boolean credentialsNonExpired) {
         this.credentialsNonExpired = credentialsNonExpired;
     }
-    
+
     public String getPassword() {
         return password;
     }
-    
+
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<String> getPasswordHistory() {
+        return passwordHistory;
+    }
+
+    public void setPasswordHistory(List<String> passwordHistory) {
+        this.passwordHistory = passwordHistory;
     }
 }

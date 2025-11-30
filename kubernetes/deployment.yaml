@@ -1,0 +1,136 @@
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: myproject-nexa
+---
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myproject-nexa-backend
+  namespace: myproject-nexa
+  labels:
+    app: myproject-nexa-backend
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: myproject-nexa-backend
+  template:
+    metadata:
+      labels:
+        app: myproject-nexa-backend
+    spec:
+      containers:
+      - name: backend
+        image: myproject-nexa-backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "production"
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: host
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: port
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: dbname
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: password
+        - name: REDIS_HOST
+          value: "myproject-nexa-redis"
+        - name: RABBITMQ_HOST
+          value: "myproject-nexa-rabbitmq"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+# Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myproject-nexa-frontend
+  namespace: myproject-nexa
+  labels:
+    app: myproject-nexa-frontend
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: myproject-nexa-frontend
+  template:
+    metadata:
+      labels:
+        app: myproject-nexa-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: myproject-nexa-frontend:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: REACT_APP_API_URL
+          value: "http://api.myproject.nexa"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10

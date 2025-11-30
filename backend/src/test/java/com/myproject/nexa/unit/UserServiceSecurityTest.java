@@ -41,11 +41,17 @@ class UserServiceSecurityTest {
     @Mock
     private SecurityUtil securityUtil;
 
+    @Mock
+    private com.myproject.nexa.utils.ObservabilityUtil observabilityUtil;
+
+    @Mock
+    private com.myproject.nexa.utils.AuditLogUtil auditLogUtil;
+
     private UserServiceImpl userService;
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository, roleRepository, passwordEncoder, null, null);
+        userService = new UserServiceImpl(userRepository, roleRepository, passwordEncoder, observabilityUtil, auditLogUtil, securityUtil);
     }
 
     @Test

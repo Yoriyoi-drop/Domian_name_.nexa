@@ -44,6 +44,8 @@ public class AppProperties {
         private int maxLoginAttempts = 5;
         private long lockoutDurationMinutes = 30; // 30 minutes
         private String[] allowedOrigins = {"https://myproject.nexa", "https://api.myproject.nexa"};
+        private int maxPasswordHistory = 5; // Number of past passwords to remember
+        private long passwordExpiryDays = 90; // Password expiration in days
     }
 
     @Data

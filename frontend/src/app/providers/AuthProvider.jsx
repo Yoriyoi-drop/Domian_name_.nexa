@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import tokenService from '../core/auth/tokenService';
-import apiClient from '../core/api/apiClient';
+import tokenService from '@/core/auth/tokenService';
+import apiClient from '@/core/api/apiClient';
 
 const AuthContext = createContext();
+
+export { AuthContext };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

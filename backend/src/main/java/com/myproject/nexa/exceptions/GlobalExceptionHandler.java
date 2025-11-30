@@ -5,6 +5,7 @@ import com.myproject.nexa.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -20,45 +21,87 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(AppException.class)
-    public ResponseEntity<ApiResponse<Object>> handleAppException(AppException ex, HttpServletRequest request) {
-        ApiResponse<Object> response = ApiResponse.error(ex.getErrorCode());
-        return new ResponseEntity<>(response, ex.getErrorCode().getHttpStatus());
+    public ResponseEntity<ErrorResponse> handleAppException(AppException ex, HttpServletRequest request) {
+        log.error("AppException: {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = ErrorResponse.of(
+            ex.getErrorCode(),
+            ex.getMessage(), // In production, this should be a generic message
+            request.getRequestURI()
+        );
+        return ResponseEntity
+            .status(ex.getErrorCode().getHttpStatus())
+            .body(errorResponse);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
-        ApiResponse<Object> response = ApiResponse.error(ex.getErrorCode(), ex.getMessage());
-        return new ResponseEntity<>(response, ex.getErrorCode().getHttpStatus());
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
+        log.error("ResourceNotFoundException: {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = ErrorResponse.of(
+            ex.getErrorCode(),
+            ex.getMessage(),
+            request.getRequestURI()
+        );
+        return ResponseEntity
+            .status(ex.getErrorCode().getHttpStatus())
+            .body(errorResponse);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiResponse<Object>> handleBadCredentialsException(BadCredentialsException ex, HttpServletRequest request) {
-        ApiResponse<Object> response = ApiResponse.error(ErrorCode.AUTH_001);
-        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex, HttpServletRequest request) {
+        log.error("BadCredentialsException: {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = ErrorResponse.of(
+            ErrorCode.AUTH_001,
+            "Invalid username or password",
+            request.getRequestURI()
+        );
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(errorResponse);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<Object>> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
-        ApiResponse<Object> response = ApiResponse.error(ErrorCode.SECURITY_001);
-        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+        log.error("AccessDeniedException: {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = ErrorResponse.of(
+            ErrorCode.SECURITY_001,
+            "Access denied",
+            request.getRequestURI()
+        );
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(errorResponse);
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiResponse<Object>> handleBadRequestException(BadRequestException ex, HttpServletRequest request) {
-        ApiResponse<Object> response = ApiResponse.error(ex.getErrorCode(), ex.getMessage());
-        return new ResponseEntity<>(response, ex.getErrorCode().getHttpStatus());
+    public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex, HttpServletRequest request) {
+        log.error("BadRequestException: {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = ErrorResponse.of(
+            ex.getErrorCode(),
+            ex.getMessage(),
+            request.getRequestURI()
+        );
+        return ResponseEntity
+            .status(ex.getErrorCode().getHttpStatus())
+            .body(errorResponse);
     }
 
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ApiResponse<Object>> handleUnauthorizedException(UnauthorizedException ex, HttpServletRequest request) {
-        ApiResponse<Object> response = ApiResponse.error(ex.getErrorCode(), ex.getMessage());
-        return new ResponseEntity<>(response, ex.getErrorCode().getHttpStatus());
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex, HttpServletRequest request) {
+        log.error("UnauthorizedException: {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = ErrorResponse.of(
+            ex.getErrorCode(),
+            ex.getMessage(),
+            request.getRequestURI()
+        );
+        return ResponseEntity
+            .status(ex.getErrorCode().getHttpStatus())
+            .body(errorResponse);
     }
 
     @Override
@@ -73,8 +116,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             errors.add(error.getField() + ": " + error.getDefaultMessage());
         }
 
-        ApiResponse<Object> response = ApiResponse.error(ErrorCode.VALIDATION_001, errors);
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        log.error("MethodArgumentNotValidException: {}", errors);
+        ErrorResponse errorResponse = ErrorResponse.of(
+            ErrorCode.VALIDATION_001,
+            "Validation failed",
+            errors,
+            request.getDescription(false).replace("uri=", "")
+        );
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(errorResponse);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -84,16 +135,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             errors.add(violation.getPropertyPath() + ": " + violation.getMessage());
         }
 
-        ApiResponse<Object> response = ApiResponse.error(ErrorCode.VALIDATION_001, errors);
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        log.error("ConstraintViolationException: {}", errors);
+        ErrorResponse errorResponse = ErrorResponse.of(
+            ErrorCode.VALIDATION_001,
+            "Validation failed",
+            errors,
+            request.getDescription(false).replace("uri=", "")
+        );
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Object>> handleGenericException(Exception ex, HttpServletRequest request) {
-        // Log the exception for debugging
-        ex.printStackTrace();
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
+        log.error("Unhandled exception: {}", ex.getMessage(), ex);
 
-        ApiResponse<Object> response = ApiResponse.error(ErrorCode.SYSTEM_001);
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        // Don't expose internal error details to the client
+        ErrorResponse errorResponse = ErrorResponse.of(
+            ErrorCode.SYSTEM_001,
+            "An unexpected error occurred",
+            request.getRequestURI()
+        );
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(errorResponse);
     }
 }

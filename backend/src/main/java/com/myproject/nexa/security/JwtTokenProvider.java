@@ -54,15 +54,17 @@ public class JwtTokenProvider {
                 .parseClaimsJws(authToken);
             return true;
         } catch (SignatureException ex) {
-            log.error("Invalid JWT signature: {}", ex.getMessage());
+            log.error("Invalid JWT signature");
         } catch (MalformedJwtException ex) {
-            log.error("Invalid JWT token: {}", ex.getMessage());
+            log.error("Invalid JWT token");
         } catch (ExpiredJwtException ex) {
-            log.error("JWT token is expired: {}", ex.getMessage());
+            log.error("JWT token is expired");
         } catch (UnsupportedJwtException ex) {
-            log.error("JWT token is unsupported: {}", ex.getMessage());
+            log.error("JWT token is unsupported");
         } catch (IllegalArgumentException ex) {
-            log.error("JWT claims string is empty: {}", ex.getMessage());
+            log.error("JWT claims string is empty");
+        } catch (Exception ex) {
+            log.error("JWT token validation failed");
         }
         return false;
     }
@@ -74,5 +76,13 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getExpiration();
+    }
+
+    /**
+     * Get the expiration time in milliseconds from a JWT token
+     */
+    public long getExpiration(String token) {
+        Date expiration = getExpirationDateFromToken(token);
+        return expiration != null ? expiration.getTime() : 0;
     }
 }

@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
+@lombok.experimental.SuperBuilder
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
 public abstract class BaseEntity {
 
     @Id
@@ -45,5 +48,9 @@ public abstract class BaseEntity {
 
     public void setDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

@@ -1,0 +1,539 @@
+openapi: 3.0.1
+info:
+  title: MyProject.nexa API
+  description: API documentation for MyProject.nexa enterprise application
+  version: 1.0.0
+  contact:
+    name: MyProject.nexa Development Team
+    email: dev@myproject.nexa
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: https://api.myproject.nexa/v1
+    description: Production server
+  - url: https://staging-api.myproject.nexa/v1
+    description: Staging server
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and return JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              loginExample:
+                summary: Example login request
+                value:
+                  username: "testuser"
+                  password: "password123"
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              examples:
+                loginSuccess:
+                  summary: Successful login response
+                  value:
+                    accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    tokenType: "Bearer"
+                    expiresIn: 86400
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: Register a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: User already exists
+  /users:
+    get:
+      tags:
+        - User Management
+      summary: Get all users
+      description: Retrieve a list of all users with pagination
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - User Management
+      summary: Create a new user
+      description: Create a new user (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '200':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      security:
+        - bearerAuth: []
+  /users/{id}:
+    get:
+      tags:
+        - User Management
+      summary: Get user by ID
+      description: Retrieve user information by ID
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - bearerAuth: []
+    put:
+      tags:
+        - User Management
+      summary: Update user
+      description: Update user information by ID
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - User Management
+      summary: Delete user
+      description: Delete user by ID (soft delete)
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '204':
+          description: User deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      security:
+        - bearerAuth: []
+  /dashboard/stats:
+    get:
+      tags:
+        - Dashboard
+      summary: Get dashboard statistics
+      description: Retrieve dashboard statistics and KPIs
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStatsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+      security:
+        - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Page number (0-indexed)
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      description: Page size
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    Sort:
+      name: sort
+      in: query
+      description: Sorting criteria (e.g., field,asc or field,desc)
+      required: false
+      schema:
+        type: string
+    UserId:
+      name: id
+      in: path
+      description: User ID
+      required: true
+      schema:
+        type: integer
+  responses:
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized - authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: "testuser"
+          description: User's login username
+        password:
+          type: string
+          example: "password123"
+          description: User's password
+          format: password
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: "newuser"
+          description: Desired username
+        email:
+          type: string
+          format: email
+          example: "newuser@example.com"
+          description: User's email address
+        password:
+          type: string
+          example: "SecurePass123!"
+          description: Password for the new account
+          format: password
+        firstName:
+          type: string
+          example: "John"
+          description: User's first name
+        lastName:
+          type: string
+          example: "Doe"
+          description: User's last name
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          description: JWT access token
+        refreshToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          description: JWT refresh token
+        tokenType:
+          type: string
+          example: "Bearer"
+          description: Type of the token
+        expiresIn:
+          type: integer
+          example: 86400
+          description: Token expiration time in seconds
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: Unique identifier for the user
+        username:
+          type: string
+          example: "testuser"
+          description: User's username
+        email:
+          type: string
+          format: email
+          example: "test@example.com"
+          description: User's email address
+        firstName:
+          type: string
+          example: "Test"
+          description: User's first name
+        lastName:
+          type: string
+          example: "User"
+          description: User's last name
+        phone:
+          type: string
+          example: "+1234567890"
+          description: User's phone number
+        address:
+          type: string
+          example: "123 Main St, City, Country"
+          description: User's address
+        enabled:
+          type: boolean
+          example: true
+          description: Whether the user account is enabled
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-01-01T00:00:00Z"
+          description: Account creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2023-01-01T00:00:00Z"
+          description: Account last update timestamp
+        roles:
+          type: array
+          items:
+            type: string
+          example: ["USER"]
+          description: User's assigned roles
+    UserPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+        pageable:
+          type: object
+          properties:
+            pageNumber:
+              type: integer
+            pageSize:
+              type: integer
+            sort:
+              type: object
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        first:
+          type: boolean
+        last:
+          type: boolean
+        size:
+          type: integer
+        number:
+          type: integer
+        numberOfElements:
+          type: integer
+        empty:
+          type: boolean
+    CreateUserRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: "newuser"
+          description: Desired username
+        email:
+          type: string
+          format: email
+          example: "newuser@example.com"
+          description: User's email address
+        password:
+          type: string
+          example: "SecurePass123!"
+          description: Password for the new account
+          format: password
+        firstName:
+          type: string
+          example: "John"
+          description: User's first name
+        lastName:
+          type: string
+          example: "Doe"
+          description: User's last name
+        phone:
+          type: string
+          example: "+1234567890"
+          description: User's phone number
+        address:
+          type: string
+          example: "123 Main St, City, Country"
+          description: User's address
+        enabled:
+          type: boolean
+          example: true
+          description: Whether the user account should be enabled
+    UpdateUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "updateduser"
+          description: Updated username
+        email:
+          type: string
+          format: email
+          example: "updated@example.com"
+          description: Updated email address
+        firstName:
+          type: string
+          example: "Updated"
+          description: Updated first name
+        lastName:
+          type: string
+          example: "User"
+          description: Updated last name
+        phone:
+          type: string
+          example: "+1234567890"
+          description: Updated phone number
+        address:
+          type: string
+          example: "123 Main St, City, Country"
+          description: Updated address
+        enabled:
+          type: boolean
+          example: true
+          description: Updated account enabled status
+    DashboardStatsResponse:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+          example: 1250
+          description: Total number of users
+        activeUsers:
+          type: integer
+          example: 890
+          description: Number of currently active users
+        newUsersToday:
+          type: integer
+          example: 15
+          description: Number of new users registered today
+        systemHealth:
+          type: string
+          enum: [healthy, warning, error]
+          example: "healthy"
+          description: Overall system health status
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-01-01T00:00:00Z"
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "Invalid input provided"
+        path:
+          type: string
+          example: "/api/v1/users"
