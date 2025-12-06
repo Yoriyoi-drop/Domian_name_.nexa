@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
+        <version>4.0.0</version>
         <relativePath/>
     </parent>
     <groupId>com.myproject.nexa</groupId>
@@ -78,7 +78,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.1.0</version>
+            <version>3.0.0</version>
         </dependency>
 
         <!-- Flyway for database migrations -->
@@ -156,14 +156,14 @@
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-            <version>1.32.0</version>
+            <version>2.22.0</version>
         </dependency>
 
         <!-- Spring Cloud Contract for contract testing -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-contract-verifier</artifactId>
-            <version>4.0.3</version>
+            <version>5.0.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -225,7 +225,7 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>7.4</version>
+            <version>9.0</version>
         </dependency>
     </dependencies>
 
@@ -304,7 +304,7 @@
             <plugin>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-contract-maven-plugin</artifactId>
-                <version>4.0.3</version>
+                <version>5.0.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <packageWithBaseClasses>com.myproject.nexa.contract</packageWithBaseClasses>
@@ -316,7 +316,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>8.4.0</version>
+                <version>12.1.9</version>
                 <executions>
                     <execution>
                         <goals>
